@@ -1,0 +1,14 @@
+#La anotación @WebFilter, agregada a la clase, indica al servidor en qué solicitudes se debe llamar a este filter, según la URL de la solicitud.
+@WebFilter(urlPatterns = "/api/**")
+public class LogFilter implements Filter {
+    
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        System.out.println("Requisição recebida em: " + LocalDateTime.now());
+        
+        #El método doFilter es llamado por el servidor automáticamente, cada vez que este filter tiene que ser ejecutado, y la llamada al método filterChain.doFilter indica que los siguientes filters, 
+        si hay otros, pueden ser ejecutados. 
+        filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+}
