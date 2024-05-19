@@ -10,7 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.usuario.DatosAutenticacionUsuario;
 import med.voll.api.domain.usuario.Usuario;
 import med.voll.api.infra.security.DatosJWTToken;
@@ -18,6 +24,7 @@ import med.voll.api.infra.security.TokenService;
 
 @RestController
 @RequestMapping("/login")
+@Tag(name = "Autenticacion", description = "Operaciones relacionadas con la autenticación de los usuarios")
 public class AutenticacionController {
 
     @Autowired
@@ -26,6 +33,14 @@ public class AutenticacionController {
     private TokenService tokenService;
 
     @PostMapping
+    @Operation(
+        summary = "Inicio de sesión de usuario",
+        description = "Este metodo la creación de un JWT para el inicio de sesión de un usuario",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Sesión iniciada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     public ResponseEntity<Object> autenticarUsuario(@RequestBody @Valid DatosAutenticacionUsuario datosAutenticacionUsuario) {
         Authentication authToken = new UsernamePasswordAuthenticationToken(datosAutenticacionUsuario.login(), datosAutenticacionUsuario.clave());
         var usuarioAutenticado = authenticationManager.authenticate(authToken);

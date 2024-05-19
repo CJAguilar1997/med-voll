@@ -1,0 +1,1 @@
+ALTER TABLE Consultas ADD motivo_cancelacion VARCHAR(40);

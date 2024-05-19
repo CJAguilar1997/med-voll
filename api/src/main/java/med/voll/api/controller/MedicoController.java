@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import med.voll.api.domain.direccion.DatosDireccion;
@@ -30,6 +36,8 @@ import med.voll.api.domain.medico.MedicoRepository;
 
 @RestController
 @RequestMapping("/medicos")
+@SecurityRequirement(name = "bearer-key")
+@Tag(name = "Médicos", description = "Operaciones relacionadas con los médicos")
 //@Secured("ADMIN")//<-Este es el metodo que se habilita desde el SecurityConfiguration se puede aplicar tanto a nivel de clase
 public class MedicoController {
 
@@ -37,6 +45,14 @@ public class MedicoController {
     private MedicoRepository medicoRepository;
 
     @PostMapping
+    @Operation(
+        summary = "Crea un nuevo médico",
+        description = "Este metodo permite crear un nuevo médico",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Médico creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     //@Secured("ADMIN")//<->Como a nivel de metodo de clase.
     public ResponseEntity<DatosRespuestaMedico> registrarMedicos(@RequestBody @Valid DatosRegistroMedico datosRegistroMedico, UriComponentsBuilder uriComponentsBuilder) {
         Medico medico = medicoRepository.save(new Medico(datosRegistroMedico));
@@ -47,6 +63,14 @@ public class MedicoController {
     }
 
     @GetMapping
+    @Operation(
+        summary = "Recupera la lista de los médicos",
+        description = "Este metodo permite listar los médicos activos",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Lista de médicos recuperada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     public ResponseEntity<Page<DatosListadoMedico>> listadoMedicos(@PageableDefault(size = 6,sort = "nombre" , direction = Direction.ASC) Pageable paginacion) {
         // return medicoRepository.findAll(paginacion).map(DatosListadoMedico::new);
         return ResponseEntity.ok(medicoRepository.findByActivoTrue(paginacion).map(DatosListadoMedico::new));
@@ -55,6 +79,14 @@ public class MedicoController {
 
     @PutMapping
     @Transactional
+    @Operation(
+        summary = "Actualizar los datos de un médico",
+        description = "Este metodo permite modíficar los datos de un médico",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Médico actualizado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     public ResponseEntity<DatosRespuestaMedico> actualizarMedicos(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico) {
         Medico medico = medicoRepository.getReferenceById(datosActualizarMedico.id());
         medico.actualizarDatos(datosActualizarMedico);
@@ -64,6 +96,14 @@ public class MedicoController {
     @DeleteMapping("/{id}")
     @Transactional
     // DELETE LÓGICO
+    @Operation(
+        summary = "Elimina un médico",
+        description = "Este metodo permite eliminar un médico del listado",
+        responses = {
+            @ApiResponse(responseCode = "204", description = "Médico eliminado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     public ResponseEntity<Object> eliminarMedicos(@PathVariable Long id) {
         Medico medico = medicoRepository.getReferenceById(id);
         medico.desactivarMedico();
@@ -78,6 +118,14 @@ public class MedicoController {
 
     @GetMapping("/{id}")
     @Transactional
+    @Operation(
+        summary = "Recupera los datos de un médico",
+        description = "Este metodo recuperar los datos de un médico desde la base de datos",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Datos del médico listado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Medico.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+        }
+    )
     public ResponseEntity<DatosRespuestaMedico> retornaDatosMedicos(@PathVariable Long id) {
         Medico medico = medicoRepository.getReferenceById(id);
         var datosRespuestaMedico = new DatosRespuestaMedico(medico.getId(), medico.getNombre(), medico.getEmail(), medico.getTelefono(), medico.getDocumento(), new DatosDireccion(medico.getDireccion().getCalle(), medico.getDireccion().getDistrito(), medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(), medico.getDireccion().getComplemento()));
